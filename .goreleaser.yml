@@ -23,7 +23,7 @@ builds:
     goamd64:
       - v1
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     targets:
       - linux_amd64_v1
     binary: aws-pkcs-process-credential
