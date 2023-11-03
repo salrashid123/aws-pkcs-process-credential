@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"os"
 
-	"log"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 
@@ -79,7 +77,7 @@ func main() {
 
 	err := uri.Parse(cfg.flPKCSURI)
 	if err != nil {
-		fmt.Printf("Error parsing pkcs11 URI %v\n", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error parsing pkcs11 URI %v\n", err)
 		os.Exit(1)
 	}
 
@@ -87,42 +85,42 @@ func main() {
 	uri.SetAllowAnyModule(true)
 	module, err := uri.GetModule()
 	if err != nil {
-		fmt.Printf("Error loading module from path %v\n", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error loading module from path %v\n", err)
 		os.Exit(1)
 	}
 
 	pin, err := uri.GetPIN()
 	if err != nil {
-		fmt.Printf("Error extracting PIN from URI %v\n", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error extracting PIN from URI %v\n", err)
 		os.Exit(1)
 	}
 
 	slot, ok := uri.GetPathAttribute("slot", false)
 	if !ok {
-		fmt.Printf("Error reading slot-id PIN from URI %s\n", cfg.flPKCSURI)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error reading slot-id PIN from URI %s\n", cfg.flPKCSURI)
 		os.Exit(1)
 	}
 	slotid, err := strconv.Atoi(slot)
 	if err != nil {
-		fmt.Printf("Error converting slot to string %v\n", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error converting slot to string %v\n", err)
 		os.Exit(1)
 	}
 
 	id, ok := uri.GetPathAttribute("id", false)
 	if !ok {
-		fmt.Printf("Error loading PKCS ID from URI %s\n", cfg.flPKCSURI)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error loading PKCS ID from URI %s\n", cfg.flPKCSURI)
 		os.Exit(1)
 	}
 
 	hex_id, err := hex.DecodeString(id)
 	if err != nil {
-		fmt.Printf("Error converting hex id to string %v\n", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error converting hex id to string %v\n", err)
 		os.Exit(1)
 	}
 
 	object, ok := uri.GetPathAttribute("object", false)
 	if !ok {
-		fmt.Printf("Error no object in URI %s\n", cfg.flPKCSURI)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error no object in URI %s\n", cfg.flPKCSURI)
 		os.Exit(1)
 	}
 
@@ -156,7 +154,7 @@ func main() {
 			PKCSSigner: pkcsSigner,
 		})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not initialize Tink Credentials %v", err)
+			fmt.Fprintf(os.Stderr, "Could not initialize PKCS Credentials %v", err)
 			os.Exit(1)
 		}
 
@@ -171,7 +169,7 @@ func main() {
 			PKCSSigner: pkcsSigner,
 		})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not initialize Tink Credentials %v", err)
+			fmt.Fprintf(os.Stderr, "Could not initialize PKCS Credentials %v", err)
 			os.Exit(1)
 		}
 	}
@@ -184,7 +182,8 @@ func main() {
 
 	t, err := creds.ExpiresAt()
 	if err != nil {
-		log.Fatalf("Error getting Expiration Time %v", err)
+		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error getting Expiration Time %v", err)
+		os.Exit(1)
 	}
 
 	resp := &processCredentialsResponse{
