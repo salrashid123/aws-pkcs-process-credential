@@ -36,7 +36,7 @@ type processCredentialsResponse struct {
 }
 
 const (
-	ISO8601 = "2006-01-02T15:04:05-0700"
+	RFC3339 = "2006-01-02T15:04:05Z07:00"
 )
 
 type credConfig struct {
@@ -192,7 +192,7 @@ func main() {
 		AccessKeyId:     val.AccessKeyID,
 		SecretAccessKey: val.SecretAccessKey,
 		SessionToken:    val.SessionToken,
-		Expiration:      fmt.Sprintf("%s", t.Format(ISO8601)),
+		Expiration:      fmt.Sprintf("%s", t.Format(RFC3339)),
 	}
 
 	m, err := json.Marshal(resp)
