@@ -3,17 +3,28 @@ module github.com/salrashid123/aws-pkcs-process-credential
 go 1.21
 
 require (
-	github.com/aws/aws-sdk-go v1.46.6
-	github.com/google/uuid v1.3.1
-	github.com/salrashid123/aws_hmac/pkcs v0.0.0-20231030120245-fc97b7883791
-	github.com/salrashid123/aws_hmac/pkcs/signer v0.0.0-20231030120245-fc97b7883791
-	github.com/salrashid123/aws_hmac/stsschema v0.0.0-20230907121122-c295c839d70c
+	github.com/aws/aws-sdk-go-v2 v1.27.2
+	github.com/aws/aws-sdk-go-v2/config v1.27.18
+	github.com/aws/aws-sdk-go-v2/service/sts v1.28.12
+	github.com/google/uuid v1.6.0
+	github.com/salrashid123/aws_hmac/pkcs v0.0.0-20240606205625-780e7fecff20
+	github.com/salrashid123/aws_hmac/pkcs/signer v0.0.0-20240606205625-780e7fecff20
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20230803200340-78284954bff6
 )
 
 require (
-	github.com/aws/smithy-go v1.14.2 // indirect
-	github.com/gorilla/schema v1.2.0 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.18 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.9 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.9 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.11 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.20.11 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.5 // indirect
+	github.com/aws/smithy-go v1.20.2 // indirect
+	github.com/gorilla/schema v1.3.0 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
-	github.com/salrashid123/aws_hmac/pkcs/signer/v4 v4.0.0-20230907030921-a484b3780719 // indirect
+	github.com/salrashid123/aws_hmac/pkcs/signer/v4 v4.0.0-20240606205625-780e7fecff20 // indirect
+	github.com/salrashid123/aws_hmac/stsschema v0.0.0-20240606205625-780e7fecff20 // indirect
 )

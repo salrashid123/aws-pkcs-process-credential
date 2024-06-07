@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"strconv"
@@ -8,14 +9,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"flag"
 
 	"github.com/google/uuid"
-
-	"github.com/salrashid123/aws_hmac/stsschema"
 
 	hmaccred "github.com/salrashid123/aws_hmac/pkcs"
 	hmacsigner "github.com/salrashid123/aws_hmac/pkcs/signer"
@@ -140,14 +140,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	var creds *credentials.Credentials
+	var creds *hmaccred.PKCSCredentialsProvider
 
 	if cfg.flAssumeRole {
 		creds, err = hmaccred.NewAWSPKCSCredentials(hmaccred.PKCSProvider{
-			AssumeRoleInput: &stsschema.AssumeRoleInput{
+			AssumeRoleInput: &sts.AssumeRoleInput{
 				RoleArn:         aws.String(cfg.flAWSRoleArn),
 				RoleSessionName: aws.String(cfg.flAWSSessionName),
-				DurationSeconds: aws.Int64(int64(cfg.flDuration)),
+				DurationSeconds: aws.Int32(int32(cfg.flDuration)),
 			},
 			Version:    "2011-06-15",
 			Region:     cfg.flAWSRegion,
@@ -161,8 +161,8 @@ func main() {
 	} else {
 
 		creds, err = hmaccred.NewAWSPKCSCredentials(hmaccred.PKCSProvider{
-			GetSessionTokenInput: &stsschema.GetSessionTokenInput{
-				DurationSeconds: aws.Int64(int64(cfg.flDuration)),
+			GetSessionTokenInput: &sts.GetSessionTokenInput{
+				DurationSeconds: aws.Int32(int32(cfg.flDuration)),
 			},
 			Version:    "2011-06-15",
 			Region:     cfg.flAWSRegion,
@@ -174,15 +174,15 @@ func main() {
 		}
 	}
 
-	val, err := creds.Get()
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(cfg.flAWSRegion), config.WithCredentialsProvider(creds))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing STS Credentials %v", err)
-		os.Exit(1)
+		fmt.Printf("Could not read GetCallerIdentity response %v", err)
+		return
 	}
 
-	t, err := creds.ExpiresAt()
+	val, err := cfg.Credentials.Retrieve(context.Background())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "aws-pkcs-process-credential: Error getting Expiration Time %v", err)
+		fmt.Fprintf(os.Stderr, "Error parsing STS Credentials %v", err)
 		os.Exit(1)
 	}
 
@@ -191,7 +191,7 @@ func main() {
 		AccessKeyId:     val.AccessKeyID,
 		SecretAccessKey: val.SecretAccessKey,
 		SessionToken:    val.SessionToken,
-		Expiration:      fmt.Sprintf("%s", t.Format(RFC3339)),
+		Expiration:      fmt.Sprintf("%s", val.Expires.Format(RFC3339)),
 	}
 
 	m, err := json.Marshal(resp)

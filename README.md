@@ -38,7 +38,7 @@ First export your 'original' AWS secrets
 $ export AWS_ACCESS_KEY_ID=AKIAUH3H6EGK-redacted
 $ export AWS_SECRET_ACCESS_KEY=--redacted--
 
-## then seal it into softHSM, follow https://github.com/salrashid123/aws_hmac/tree/main/example/pkcs
+## then seal it into softHSM (for example), follow https://github.com/salrashid123/aws_hmac/tree/main/example/pkcs
 
 mkdir /tmp/tokens
 wget https://raw.githubusercontent.com/salrashid123/aws_hmac/main/example/pkcs/softhsm/softhsm.conf
@@ -47,11 +47,16 @@ export SOFTHSM2_CONF=/path/to/softhsm.conf
 ## make sure softHSM library exists at /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so 
 $ git clone https://github.com/salrashid123/aws_hmac.git
 $ cd aws_hmac/example/pkcs
-$ go run main.go   --hsmLibrary /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so  --awsRegion=us-east-1 -accessKeyID $AWS_ACCESS_KEY_ID   -secretAccessKey $AWS_SECRET_ACCESS_KEY
+
+## if using softhsm,
+### make sure SOFTHSM2_CONF is set and is pointing to the fully qualified path of softhsm.conf
+$ go run create/main.go --hsmLibrary /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so \
+     -accessKeyID $AWS_ACCESS_KEY_ID   -secretAccessKey $AWS_SECRET_ACCESS_KEY
 
 ## at this point your AWS key is loaded inside the HSM.
 ### to construct the URI, run
 
+$ export PKCS_MODULE=/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so
 $ pkcs11-tool --module $PKCS_MODULE --list-token-slots
 Available slots:
 Slot 0 (0x5f3a6d79): SoftHSM slot ID 0x5f3a6d79
@@ -66,7 +71,7 @@ Slot 0 (0x5f3a6d79): SoftHSM slot ID 0x5f3a6d79
 Slot 1 (0x1): SoftHSM slot ID 0x1
   token state:   uninitialized
 
-$  pkcs11-tool --module $PKCS_MODULE --list-objects  --pin mynewpin
+$ pkcs11-tool --module $PKCS_MODULE --list-objects  --pin mynewpin
 Using slot 0 with a present token (0x5f3a6d79)
 Secret Key Object; unknown key algorithm 43
   label:      HMACKey
@@ -82,12 +87,18 @@ The PKCS URI for softHSM will use the serialnumber (`e5cd05925f3a6d79`), token (
 (please note this is **NOT** a comprehensive PKCS URI,  if you need modifications, please submit a PR)
 
 
-In our case, the PKCS URI looks like
+In our case, the PKCS URI looks like..so go back to the root of this repo and test the standalone request
+
 ```bash
 export PKCS11_URI="pkcs11:model=SoftHSM%20v2;manufacturer=SoftHSM%20project;slot=0;serial=e5cd05925f3a6d79;token=token1;object=HMACKey;id=0100?pin-value=mynewpin&module-path=/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so"
+
 export AWS_ACCESS_KEY_ID=AKIAUH3H6EGK-redacted
 
-go run main.go --pkcs-uri=$PKCS11_URI --aws-access-key-id=$AWS_ACCESS_KEY_ID --aws-region=us-east-1
+## if using softhsm:
+# export SOFTHSM2_CONF=/full/path/to/softhsm.conf
+
+# test standalone credentials
+go run load/main.go --pkcs-uri=$PKCS11_URI --aws-access-key-id=$AWS_ACCESS_KEY_ID --aws-region=us-east-1
 ```
 
 ### Configure AWS Process Credential Profiles
