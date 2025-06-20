@@ -187,6 +187,21 @@ $ aws s3 ls mineral-minutia --region us-east-2 --profile sessiontoken
 2020-11-03 00:16:00          3 foo.txt
 ```
 
+
+### Testing
+
+```bash
+export AWS_ACCESS_KEY_ID=redacted
+export AWS_SECRET_ACCESS_KEY=redacted
+export AWS_ROLE_SESSION_NAME=mysession
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ROLE_ARN=arn:aws:iam::291738886548:role/cicdrole
+export AWS_ACCOUNT_ARN=arn:aws:iam::291738886548:user/testservice
+export AWS_ROLE_SESSION_ARN=arn:aws:sts::291738886548:assumed-role/cicdrole/mysession
+
+go test -v
+```
+
 ---
 
 #### References
